@@ -1,27 +1,27 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useNewsStatsQuery } from '../api/news-queries'
-import { formatNewsSource } from '@/shared/lib/format'
-import { cn } from '@/shared/lib/utils'
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useNewsStatsQuery } from "../api/news-queries";
+import { formatNewsSource, type NewsSource } from "@/shared/lib/format";
+import { cn } from "@/shared/lib/utils";
 
 const sourceColors = {
-  finnhub: 'text-blue-500',
-  sec: 'text-purple-500',
-  fred: 'text-amber-500',
-  rss: 'text-cyan-500',
-}
+  finnhub: "text-blue-500",
+  sec: "text-purple-500",
+  fred: "text-amber-500",
+  rss: "text-cyan-500",
+};
 
 const sourceIcons = {
-  finnhub: '🔵',
-  sec: '🟣',
-  fred: '🟡',
-  rss: '🔷',
-}
+  finnhub: "🔵",
+  sec: "🟣",
+  fred: "🟡",
+  rss: "🔷",
+};
 
 export function NewsStats() {
-  const { data: stats, isLoading, isError } = useNewsStatsQuery()
+  const { data: stats, isLoading, isError } = useNewsStatsQuery();
 
   if (isLoading) {
     return (
@@ -35,25 +35,33 @@ export function NewsStats() {
           </Card>
         ))}
       </div>
-    )
+    );
   }
 
   if (isError || !stats) {
-    return null
+    return null;
   }
+
+  // bySource가 객체인 경우 배열로 변환
+  const bySourceArray = Array.isArray(stats.bySource)
+    ? stats.bySource
+    : Object.entries(stats.bySource || {}).map(([source, count]) => ({
+        source: source as NewsSource,
+        count: count as number,
+      }));
 
   const statItems = [
     {
-      label: '📰 전체',
+      label: "📰 전체",
       value: stats.total,
-      color: 'text-foreground',
+      color: "text-foreground",
     },
-    ...stats.bySource.slice(0, 3).map((item) => ({
+    ...bySourceArray.slice(0, 3).map((item) => ({
       label: `${sourceIcons[item.source]} ${formatNewsSource(item.source)}`,
       value: item.count,
       color: sourceColors[item.source],
     })),
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -68,7 +76,7 @@ export function NewsStats() {
             </p>
             <p
               className={cn(
-                'mt-2 text-2xl font-semibold tabular-nums',
+                "mt-2 text-2xl font-semibold tabular-nums",
                 item.color,
               )}
             >
@@ -78,5 +86,5 @@ export function NewsStats() {
         </Card>
       ))}
     </div>
-  )
+  );
 }

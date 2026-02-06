@@ -70,7 +70,13 @@ export function NewsList({ filters = {}, searchQuery }: NewsListProps) {
   }
 
   const infiniteData = data as InfiniteData<ApiResponse<NewsDto[]>> | undefined;
-  const allNews = infiniteData?.pages?.flatMap((page) => page.data) ?? [];
+  const allNewsRaw = infiniteData?.pages?.flatMap((page) => page.data) ?? [];
+
+  // 중복 제거: newsId 기준으로 유니크한 뉴스만 유지
+  const allNews = allNewsRaw.filter(
+    (news, index, self) =>
+      index === self.findIndex((n) => n.newsId === news.newsId),
+  );
 
   if (allNews.length === 0) {
     return (
