@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finance Web - 뉴스 게시판
 
-## Getting Started
+미국 주식과 코인 관련 최신 뉴스를 실시간으로 확인하는 웹 플랫폼
 
-First, run the development server:
+## 🚀 주요 기능
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### ✅ Phase 1-5 완료
+
+- **뉴스 목록**: 무한스크롤, 3열 그리드 레이아웃 (반응형)
+- **뉴스 상세**: 헤드라인, 요약, 원문 링크, 심볼 태그
+- **실시간 업데이트**: SSE(Server-Sent Events) 기반 실시간 스트림
+- **필터링**: 소스별(Finnhub/SEC/FRED/RSS), 카테고리별 필터
+- **검색**: 디바운스(300ms) 적용 실시간 검색
+- **통계**: 소스별 뉴스 수 대시보드
+- **다크/라이트 모드**: 시스템 설정 기본값 지원
+- **URL 상태 동기화**: 공유 가능한 필터/검색 URL
+
+## 📦 기술 스택
+
+| 기술 | 용도 |
+|------|------|
+| Next.js 15 (App Router) | 프레임워크 |
+| TypeScript | 타입 안전성 |
+| Tailwind CSS 4 | 스타일링 |
+| shadcn/ui | UI 컴포넌트 |
+| TanStack Query 5 | 서버 상태 관리, 캐싱, 무한스크롤 |
+| nuqs | URL 쿼리 상태 동기화 |
+| date-fns | 날짜 포맷 (한국어) |
+| next-themes | 다크/라이트 모드 |
+
+## 🏗️ 아키텍처
+
+### Feature-Sliced 디렉토리 구조
+
+```
+src/
+├── app/                    # Next.js App Router 페이지
+│   ├── layout.tsx
+│   ├── page.tsx           # / → /news 리다이렉트
+│   ├── error.tsx          # 전역 에러 페이지
+│   ├── not-found.tsx      # 404 페이지
+│   └── news/
+│       ├── page.tsx       # 뉴스 목록
+│       └── [newsId]/
+│           └── page.tsx   # 뉴스 상세
+│
+├── features/              # 도메인별 기능 모듈
+│   └── news/
+│       ├── api/
+│       │   ├── news-api.ts           # API 호출 함수
+│       │   └── news-queries.ts       # TanStack Query 훅
+│       ├── components/
+│       │   ├── news-list.tsx         # 무한스크롤 목록
+│       │   ├── news-card.tsx         # 뉴스 카드
+│       │   ├── news-detail.tsx       # 상세 컴포넌트
+│       │   ├── news-filter.tsx       # 필터 UI
+│       │   ├── news-search.tsx       # 검색바
+│       │   ├── news-live-badge.tsx   # 실시간 알림
+│       │   ├── news-stats.tsx        # 통계 카드
+│       │   └── news-skeleton.tsx     # 로딩 스켈레톤
+│       ├── hooks/
+│       │   ├── use-news-filters.ts   # URL 쿼리 동기화
+│       │   └── use-news-sse.ts       # SSE 연결 관리
+│       └── types/
+│           └── news.ts               # 타입 정의
+│
+├── shared/                # 공유 유틸리티
+│   ├── api/
+│   │   └── api-client.ts             # fetch 래퍼
+│   ├── components/
+│   │   ├── providers.tsx             # React Query Provider
+│   │   ├── theme-provider.tsx        # 테마 Provider
+│   │   └── layout/
+│   │       ├── header.tsx            # 헤더
+│   │       └── footer.tsx            # 푸터
+│   ├── hooks/
+│   │   ├── use-debounce.ts
+│   │   └── use-intersection.ts
+│   ├── lib/
+│   │   ├── utils.ts                  # cn() 등
+│   │   └── format.ts                 # 날짜/소스 포맷팅
+│   ├── config/
+│   │   └── env.ts                    # 환경 설정
+│   └── types/
+│       └── api.ts                    # 공통 API 타입
+│
+└── components/ui/         # shadcn/ui 컴포넌트
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 핵심 패턴
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**무한스크롤**: TanStack Query `useInfiniteQuery` + IntersectionObserver
+**SSE 연결**: EventSource + 지수 백오프 재연결 (1s → 30s)
+**URL 동기화**: nuqs로 필터/검색 상태를 URL 쿼리로 관리
+**캐싱 전략**: 
+- 뉴스 목록: 30초 stale, 5분 gc
+- 뉴스 상세: 5분 stale, 30분 gc
+- 통계: 60초 stale, 10분 gc
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 시작하기
 
-## Learn More
+### 1. 의존성 설치
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm install
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. 환경 변수 설정
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`.env.local` 파일을 생성하고 API 서버 URL을 설정:
 
-## Deploy on Vercel
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. 개발 서버 실행
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm dev
+```
+
+브라우저에서 [http://localhost:3000](http://localhost:3000) 접속
+
+### 4. 프로덕션 빌드
+
+```bash
+pnpm build
+pnpm start
+```
+
+## 🧪 테스트
+
+```bash
+# 단위/통합 테스트
+pnpm test
+
+# E2E 테스트
+pnpm test:e2e
+
+# 테스트 커버리지
+pnpm test:coverage
+```
+
+## 📝 API 엔드포인트
+
+API 서버(`finance-api-server`)에서 제공하는 엔드포인트:
+
+| 엔드포인트 | 메서드 | 설명 |
+|-----------|--------|------|
+| `/api/v1/news` | GET | 뉴스 목록 (필터, 페이지네이션) |
+| `/api/v1/news/search` | GET | 뉴스 검색 |
+| `/api/v1/news/stats` | GET | 통계 조회 |
+| `/api/v1/news/stream` | GET | SSE 실시간 스트림 |
+| `/api/v1/news/:newsId` | GET | 뉴스 상세 |
+
+## 🎨 디자인 시스템
+
+**컨셉**: "Clean Terminal" - Bloomberg Terminal의 정보 밀도 + 현대 핀테크 미니멀리즘
+
+**컬러 시스템**:
+- Finnhub: 파란색 (#3B82F6)
+- SEC: 보라색 (#8B5CF6)
+- FRED: 노란색 (#F59E0B)
+- RSS: 청록색 (#06B6D4)
+
+**반응형 브레이크포인트**:
+- 모바일 (<768px): 1열 카드
+- 태블릿 (768-1024px): 2열 카드
+- 데스크톱 (>1024px): 3열 카드
+
+## 📄 라이선스
+
+MIT
+
+## 👥 기여
+
+이슈와 PR을 환영합니다!
