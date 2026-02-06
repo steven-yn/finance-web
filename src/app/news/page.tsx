@@ -4,11 +4,13 @@ import { Suspense } from "react";
 import { NewsList } from "@/features/news/components/news-list";
 import { NewsSearch } from "@/features/news/components/news-search";
 import { NewsFilter } from "@/features/news/components/news-filter";
+import { NewsLiveBadge } from "@/features/news/components/news-live-badge";
+import { NewsStats } from "@/features/news/components/news-stats";
 import { useNewsFilters } from "@/features/news/hooks/use-news-filters";
 import { NewsSkeleton } from "@/features/news/components/news-skeleton";
 
 function NewsContent() {
-  const { source, category, searchQuery } = useNewsFilters();
+  const { source, category, searchQuery, isSearchMode } = useNewsFilters();
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -21,7 +23,16 @@ function NewsContent() {
         </div>
 
         <NewsSearch />
+
+        {!isSearchMode && <NewsStats />}
+
         <NewsFilter />
+
+        <NewsLiveBadge
+          source={source}
+          category={category}
+          enabled={!isSearchMode}
+        />
       </div>
 
       <NewsList
