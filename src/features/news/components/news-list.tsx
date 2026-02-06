@@ -3,7 +3,10 @@
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import type { InfiniteData } from "@tanstack/react-query";
-import { useNewsInfiniteQuery } from "../api/news-queries";
+import {
+  useNewsInfiniteQuery,
+  useNewsSearchInfiniteQuery,
+} from "../api/news-queries";
 import { NewsCard } from "./news-card";
 import { NewsSkeleton } from "./news-skeleton";
 import { useIntersection } from "@/shared/hooks/use-intersection";
@@ -12,9 +15,18 @@ import type { ApiResponse } from "@/shared/types/api";
 
 interface NewsListProps {
   filters?: NewsQueryParams;
+  searchQuery?: string;
 }
 
-export function NewsList({ filters = {} }: NewsListProps) {
+export function NewsList({ filters = {}, searchQuery }: NewsListProps) {
+  const isSearchMode = !!searchQuery;
+
+  const listQuery = useNewsInfiniteQuery(filters, { enabled: !isSearchMode });
+  const searchQueryResult = useNewsSearchInfiniteQuery(
+    { q: searchQuery || "" },
+    { enabled: isSearchMode },
+  );
+
   const {
     data,
     fetchNextPage,
@@ -23,7 +35,7 @@ export function NewsList({ filters = {} }: NewsListProps) {
     isLoading,
     isError,
     error,
-  } = useNewsInfiniteQuery(filters);
+  } = isSearchMode ? searchQueryResult : listQuery;
 
   const { ref, isIntersecting } = useIntersection<HTMLDivElement>({
     threshold: 0,
