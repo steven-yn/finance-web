@@ -73,13 +73,16 @@ export function useNewsSse(options: UseNewsSseOptions = {}) {
       eventSource.onmessage = (event) => {
         if (!mountedRef.current) return
         try {
-          const data = JSON.parse(event.data)
+          JSON.parse(event.data)
           setState((prev) => ({
             ...prev,
             newCount: prev.newCount + 1,
           }))
-        } catch (error) {
-          console.error('SSE 메시지 파싱 에러:', error)
+        } catch {
+          setState((prev) => ({
+            ...prev,
+            error: 'SSE 메시지 파싱 실패',
+          }))
         }
       }
 
