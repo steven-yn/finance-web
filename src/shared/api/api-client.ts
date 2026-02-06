@@ -2,9 +2,7 @@ import { config } from "@/shared/config/env";
 import { ApiClientError, type ApiResponse } from "@/shared/types/api";
 
 interface FetchOptions extends RequestInit {
-  params?:
-    | Record<string, string | number | boolean | undefined>
-    | { [key: string]: unknown };
+  params?: { [key: string]: string | number | boolean | undefined };
 }
 
 export async function apiClient<T>(

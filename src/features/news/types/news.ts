@@ -16,12 +16,14 @@ export interface NewsQueryParams {
   offset?: number
   source?: NewsSource
   category?: NewsCategory
+  [key: string]: string | number | boolean | undefined
 }
 
 export interface SearchNewsParams {
   q: string
   limit?: number
   offset?: number
+  [key: string]: string | number | boolean | undefined
 }
 
 export interface NewsStats {

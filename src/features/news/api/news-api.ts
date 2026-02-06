@@ -11,10 +11,7 @@ export async function fetchNewsList(
   params: NewsQueryParams = {},
 ): Promise<ApiResponse<NewsDto[]>> {
   return apiClient<NewsDto[]>("/api/v1/news", {
-    params: params as unknown as Record<
-      string,
-      string | number | boolean | undefined
-    >,
+    params,
   });
 }
 
@@ -27,10 +24,7 @@ export async function searchNews(
   params: SearchNewsParams,
 ): Promise<ApiResponse<NewsDto[]>> {
   return apiClient<NewsDto[]>("/api/v1/news/search", {
-    params: params as unknown as Record<
-      string,
-      string | number | boolean | undefined
-    >,
+    params,
   });
 }
 
